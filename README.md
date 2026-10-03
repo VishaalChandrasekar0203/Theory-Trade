@@ -1,4 +1,4 @@
-# Queue Theory
+# Theory Trade
 
 A Palantir-style local ops console for a **high-frequency limit-order execution problem**: joining, racing, and canceling a child limit order at the **touch** of a single-name CLOB under **price-time (FIFO) priority**.
 

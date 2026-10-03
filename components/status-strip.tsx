@@ -24,7 +24,7 @@ export function StatusStrip({ sim }: { sim: SimulationController }) {
     <header className="flex flex-col gap-2 border-b border-zinc-800 px-3 py-2 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-zinc-500">
         <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-200">
-          Queue Theory
+          Theory Trade
         </div>
         <span className="text-zinc-600">·</span>
         <span className="uppercase tracking-[0.16em] text-zinc-400">Symbol DEMO</span>

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Queue Theory — HFT touch-queue console",
+  title: "Theory Trade — HFT touch-queue console",
   description:
     "Tagged FIFO in competing LOB queues with reneging and a deterministic latency channel.",
 };
