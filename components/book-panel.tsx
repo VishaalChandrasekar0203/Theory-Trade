@@ -123,16 +123,19 @@ export function BookPanel({ sim }: { sim: SimulationController }) {
         tagged={askTagged}
         scale={scale}
       />
-      <div className="flex flex-wrap gap-3 text-[11px] text-zinc-500">
-        <span>
-          tagged n=<Mono tone={resting ? "cyan" : "muted"}>{resting ? fmtInt(state.n) : "—"}</Mono>
-        </span>
-        <span>
-          r=<Mono tone={resting ? "cyan" : "muted"}>{resting ? fmtInt(state.r) : "—"}</Mono>
-        </span>
-        <span>
-          b=<Mono>{resting ? fmtInt(state.b) : "—"}</Mono>
-        </span>
+      <div className="font-mono text-[11px] text-zinc-500">
+        tagged{" "}
+        {resting ? (
+          <>
+            n=<Mono tone="cyan">{fmtInt(state.n)}</Mono>
+            <span className="text-zinc-700"> · </span>
+            r=<Mono tone="cyan">{fmtInt(state.r)}</Mono>
+            <span className="text-zinc-700"> · </span>
+            b=<Mono>{fmtInt(state.b)}</Mono>
+          </>
+        ) : (
+          <span>not in book</span>
+        )}
       </div>
 
       <SectionLabel>Latency pipeline</SectionLabel>

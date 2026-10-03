@@ -70,7 +70,7 @@ export function ControlsPanel({ sim }: { sim: SimulationController }) {
     <aside className="flex min-h-0 flex-col gap-3 overflow-y-auto border-zinc-800 p-3 lg:border-r">
       <SectionLabel>Controls</SectionLabel>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
           <span className="text-[10px] uppercase tracking-wide text-zinc-500">Goal</span>
           <Select

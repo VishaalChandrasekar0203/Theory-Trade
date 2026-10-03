@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mono, SectionLabel } from "@/components/ops";
+import { Mono } from "@/components/ops";
 import type { SimulationController } from "@/hooks/use-simulation";
 import { GOAL_LABELS } from "@/lib/sim";
 import { fmtInt, fmtMs } from "@/lib/format";
@@ -22,22 +22,25 @@ export function StatusStrip({ sim }: { sim: SimulationController }) {
   const st = STATUS_TONE[sim.status];
   return (
     <header className="flex flex-col gap-2 border-b border-zinc-800 px-3 py-2 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-zinc-500">
         <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-200">
           Queue Theory
         </div>
-        <span className="text-zinc-700">·</span>
-        <SectionLabel className="text-zinc-400">Symbol DEMO</SectionLabel>
-        <span className="text-zinc-700">·</span>
-        <span className="text-[11px] text-zinc-500">
-          t=<Mono>{fmtMs(sim.state.t)}</Mono>
+        <span className="text-zinc-600">·</span>
+        <span className="uppercase tracking-[0.16em] text-zinc-400">Symbol DEMO</span>
+        <span className="text-zinc-600">·</span>
+        <span>
+          t=<Mono className="text-zinc-200">{fmtMs(sim.state.t)}</Mono>
         </span>
-        <span className="text-[11px] text-zinc-500">
-          seed=<Mono>{fmtInt(sim.params.seed)}</Mono>
+        <span className="text-zinc-600">·</span>
+        <span>
+          seed=<Mono className="text-zinc-200">{fmtInt(sim.params.seed)}</Mono>
         </span>
-        <span className="text-[11px] text-zinc-500">
-          goal=<Mono className="text-zinc-300">{GOAL_LABELS[sim.goal]}</Mono>
+        <span className="text-zinc-600">·</span>
+        <span>
+          goal=<Mono className="text-zinc-200">{GOAL_LABELS[sim.goal]}</Mono>
         </span>
+        <span className="text-zinc-600">·</span>
         <Badge variant="outline" className={`rounded-sm font-mono text-[10px] ${st.className}`}>
           {st.label}
         </Badge>

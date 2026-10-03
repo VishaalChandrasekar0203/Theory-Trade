@@ -9,7 +9,7 @@ export function MetricsBar({ sim }: { sim: SimulationController }) {
   const { thermo, state, params } = sim;
   const pi = inventoryPenalty(state.inventory, params.inventoryTarget, params.phi);
   return (
-    <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-1 border-zinc-800 px-3 py-2 lg:border-r lg:w-[42%]">
+    <div className="flex min-w-0 flex-wrap items-center gap-x-6 gap-y-2 border-zinc-800 px-3 py-2 lg:border-r lg:w-[42%]">
       <SectionLabel className="w-full">Metrics</SectionLabel>
       <Metric k="P(fill)" v={fmtProb(thermo.pFill)} />
       <Metric k="E[W]" v={fmtMs(thermo.expectedWaitSec * 1000)} />
