@@ -4,6 +4,9 @@
   "private": true,
   "license": "MIT",
   "description": "HFT touch-queue dashboard: tagged FIFO in competing LOB queues with reneging and latency.",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev --port 4731 --hostname 127.0.0.1",
     "test": "vitest run",

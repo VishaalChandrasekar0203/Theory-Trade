@@ -10,7 +10,11 @@ This is **not** an M/M/1 bank. Call it **tagged FIFO in competing LOB queues wit
 
 No live LLM. No auth. No database. Recommendations are a deterministic scoring policy plus templated copy.
 
+**How to operate the console:** [USAGE.md](USAGE.md)
+
 ## Quickstart
+
+Requires **Node.js 22+**.
 
 ```bash
 npm install
@@ -18,9 +22,27 @@ npm test
 npm run dev
 ```
 
-The dev server binds to **http://127.0.0.1:4731** (not 3000).
+The dev server binds to **http://127.0.0.1:4731** (not 3000). If that port is already in use, the app is already running — open the URL instead of starting a second process.
 
-Same seed + params + action schedule ⇒ the same event tape. Change `n₀`, `L`, or `σ` and watch the recommended action flip; the directive panel names which term dominated.
+Same seed + params + action schedule ⇒ the same event tape. Change `n₀`, \(L\), or \(\sigma\) and watch the recommended action flip; the directive panel names which term dominated.
+
+## Screenshots
+
+Idle console (manual params, seed 42):
+
+![Theory Trade idle console](docs/screenshots/idle.png)
+
+Episode running:
+
+![Theory Trade running](docs/screenshots/running.png)
+
+Public Coinbase L1 calibrating the sliders:
+
+![Coinbase live calibration](docs/screenshots/live-coinbase.png)
+
+Start freezes the live estimates so the seeded tape stays replayable:
+
+![Live estimates frozen at Start](docs/screenshots/live-frozen.png)
 
 ## The problem
 
@@ -132,7 +154,7 @@ Nothing. `lib/sim/explain.ts` fills a fixed sentence from the same numbers as th
 
 ## Stack
 
-Next.js App Router, TypeScript (strict), Tailwind CSS, shadcn/ui. Tests: Vitest. License: MIT.
+Next.js App Router, TypeScript (strict), Tailwind CSS, shadcn/ui. Tests: Vitest. CI: Node 22, `npm test`, `tsc --noEmit`, `next build`. License: MIT.
 
 ## Live calibration (public Coinbase L1)
 
