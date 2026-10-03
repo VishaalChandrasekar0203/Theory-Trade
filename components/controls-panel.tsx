@@ -13,7 +13,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Mono, SectionLabel } from "@/components/ops";
 import type { SimulationController } from "@/hooks/use-simulation";
-import { GOAL_LABELS, type BookSide, type GoalId, type SimParams } from "@/lib/sim";
+import { GOAL_LABELS, type GoalId, type SimParams } from "@/lib/sim";
 
 interface SliderSpec {
   key: keyof SimParams;
@@ -94,23 +94,40 @@ export function ControlsPanel({ sim }: { sim: SimulationController }) {
         </div>
         <div className="flex flex-col gap-1">
           <span className="text-[10px] uppercase tracking-wide text-zinc-500">Side</span>
-          <Select
-            value={p.joinSide}
-            items={{ bid: "Bid (buy)", ask: "Ask (sell)" }}
-            onValueChange={(value) => {
-              if (value === "bid" || value === "ask") {
-                sim.updateParams({ joinSide: value as BookSide });
-              }
-            }}
-          >
-            <SelectTrigger size="sm" className="w-full rounded-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="bid">Bid (buy)</SelectItem>
-              <SelectItem value="ask">Ask (sell)</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 gap-1" role="group" aria-label="Join side">
+            <Button
+              size="sm"
+              type="button"
+              aria-pressed={p.joinSide === "bid"}
+              variant={p.joinSide === "bid" ? "default" : "outline"}
+              className={`rounded-sm ${
+                p.joinSide === "bid"
+                  ? "bg-cyan-500 text-zinc-950 hover:bg-cyan-400"
+                  : ""
+              }`}
+              onClick={() => {
+                if (p.joinSide !== "bid") sim.updateParams({ joinSide: "bid" });
+              }}
+            >
+              Buy
+            </Button>
+            <Button
+              size="sm"
+              type="button"
+              aria-pressed={p.joinSide === "ask"}
+              variant={p.joinSide === "ask" ? "default" : "outline"}
+              className={`rounded-sm ${
+                p.joinSide === "ask"
+                  ? "bg-amber-400 text-zinc-950 hover:bg-amber-300"
+                  : ""
+              }`}
+              onClick={() => {
+                if (p.joinSide !== "ask") sim.updateParams({ joinSide: "ask" });
+              }}
+            >
+              Sell
+            </Button>
+          </div>
         </div>
       </div>
 
