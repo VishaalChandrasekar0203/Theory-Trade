@@ -1,6 +1,6 @@
 # Theory Trade
 
-A Ops-style local console for a **high-frequency limit-order execution problem**: joining, racing, and canceling a child limit order at the **touch** of a single-name CLOB under **price-time (FIFO) priority**.
+A Queueing Theory Ops-style local console for a **high-frequency limit-order execution problem**: joining, racing, and canceling a child limit order at the **touch** of a single-name CLOB under **price-time (FIFO) priority**.
 
 The math and simulator are the product. The UI is an ops console over that model.
 
