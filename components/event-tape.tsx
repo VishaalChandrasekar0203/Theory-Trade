@@ -26,7 +26,14 @@ export function EventTape({ sim }: { sim: SimulationController }) {
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col px-3 py-2">
-      <SectionLabel>Event tape</SectionLabel>
+      <div className="flex items-baseline gap-2">
+        <SectionLabel>Event tape</SectionLabel>
+        {sim.liveStatus === "frozen" ? (
+          <span className="font-mono text-[10px] uppercase tracking-wide text-zinc-600">
+            Model path · calibrated
+          </span>
+        ) : null}
+      </div>
       <ScrollArea className="mt-1 h-40 lg:h-full">
         <ol className="flex flex-col gap-0.5 font-mono text-[11px]">
           {!sim.started && sim.events.length === 0 ? (

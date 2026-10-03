@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Mono, SectionLabel } from "@/components/ops";
 import type { SimulationController } from "@/hooks/use-simulation";
 import { GOAL_LABELS, type GoalId, type SimParams } from "@/lib/sim";
+import { LIVE_PRODUCTS, type LiveProduct } from "@/lib/live";
 
 interface SliderSpec {
   key: keyof SimParams;
@@ -26,25 +27,37 @@ interface SliderSpec {
 
 const SLIDERS: SliderSpec[] = [
   { key: "r0", label: "Size r₀", min: 1, max: 500, step: 1, format: (v) => `${v}` },
-  { key: "n0", label: "Ahead n₀", min: 0, max: 2000, step: 1, format: (v) => `${v}` },
-  { key: "qOpp0", label: "Opp q", min: 1, max: 2000, step: 1, format: (v) => `${v}` },
+  { key: "n0", label: "Ahead n₀", min: 0, max: 20000, step: 1, format: (v) => `${v}` },
+  { key: "qOpp0", label: "Opp q", min: 1, max: 20000, step: 1, format: (v) => `${v}` },
   { key: "latencyMs", label: "Latency L", min: 0, max: 50, step: 0.5, format: (v) => `${v} ms` },
-  { key: "lambda", label: "λ behind", min: 0, max: 10000, step: 50, format: (v) => `${v}/s` },
-  { key: "theta", label: "θ /share", min: 0, max: 40, step: 0.5, format: (v) => `${v}/s` },
-  { key: "mu", label: "μ hit", min: 1, max: 20000, step: 50, format: (v) => `${v}/s` },
-  { key: "muOpp", label: "μ opp", min: 0, max: 20000, step: 50, format: (v) => `${v}/s` },
+  { key: "lambda", label: "λ behind", min: 0, max: 20000, step: 50, format: (v) => `${v.toFixed(2)}/s` },
+  { key: "theta", label: "θ /share", min: 0, max: 40, step: 0.5, format: (v) => `${v.toFixed(2)}/s` },
+  { key: "mu", label: "μ hit", min: 1, max: 20000, step: 50, format: (v) => `${v.toFixed(2)}/s` },
+  { key: "muOpp", label: "μ opp", min: 0, max: 20000, step: 50, format: (v) => `${v.toFixed(2)}/s` },
   { key: "sigma", label: "σ vol", min: 0, max: 3, step: 0.05, format: (v) => v.toFixed(2) },
   { key: "phi", label: "φ penalty", min: 0, max: 0.02, step: 0.0005, format: (v) => v.toFixed(4) },
 ];
+
+const LIVE_DRIVEN: ReadonlySet<keyof SimParams> = new Set([
+  "n0",
+  "qOpp0",
+  "lambda",
+  "theta",
+  "mu",
+  "muOpp",
+  "sigma",
+]);
 
 function ParamSlider({
   spec,
   value,
   onChange,
+  disabled,
 }: {
   spec: SliderSpec;
   value: number;
   onChange: (v: number) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="grid grid-cols-[72px_1fr_64px] items-center gap-2">
@@ -53,7 +66,8 @@ function ParamSlider({
         min={spec.min}
         max={spec.max}
         step={spec.step}
-        value={[value]}
+        disabled={disabled}
+        value={[Math.min(spec.max, Math.max(spec.min, value))]}
         onValueChange={(v) => {
           const next = Array.isArray(v) ? v[0] : v;
           if (typeof next === "number" && Number.isFinite(next)) onChange(next);
@@ -66,9 +80,51 @@ function ParamSlider({
 
 export function ControlsPanel({ sim }: { sim: SimulationController }) {
   const p = sim.params;
+  const liveLocked = sim.liveEnabled && sim.liveStatus !== "frozen" && sim.liveStatus !== "off";
   return (
     <aside className="flex min-h-0 flex-col gap-3 overflow-y-auto border-zinc-800 p-3 lg:border-r">
       <SectionLabel>Controls</SectionLabel>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-[10px] uppercase tracking-wide text-zinc-500">Live feed</span>
+        <div className="grid grid-cols-2 gap-1">
+          <Button
+            size="sm"
+            type="button"
+            aria-pressed={sim.liveEnabled}
+            variant={sim.liveEnabled ? "default" : "outline"}
+            className="rounded-sm"
+            onClick={() => sim.setLiveEnabled(!sim.liveEnabled)}
+          >
+            {sim.liveEnabled ? "Coinbase ON" : "Coinbase OFF"}
+          </Button>
+          <Select
+            value={sim.liveProduct}
+            items={{ "BTC-USD": "BTC-USD", "ETH-USD": "ETH-USD" }}
+            onValueChange={(value) => {
+              if (value === "BTC-USD" || value === "ETH-USD") {
+                sim.setLiveProduct(value as LiveProduct);
+              }
+            }}
+          >
+            <SelectTrigger size="sm" className="w-full rounded-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {LIVE_PRODUCTS.map((id) => (
+                <SelectItem key={id} value={id}>
+                  {id}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <p className="text-[10px] leading-relaxed text-zinc-600">
+          Public Coinbase L1 + trades calibrate λ, μ, θ, σ, n. Not an HFT book: n is
+          touch size, not queue priority. Estimates freeze at Start so the seeded model
+          path stays replayable.
+        </p>
+      </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
@@ -137,6 +193,7 @@ export function ControlsPanel({ sim }: { sim: SimulationController }) {
             key={spec.key}
             spec={spec}
             value={p[spec.key] as number}
+            disabled={liveLocked && LIVE_DRIVEN.has(spec.key)}
             onChange={(v) => sim.updateParams({ [spec.key]: v })}
           />
         ))}
@@ -159,6 +216,7 @@ export function ControlsPanel({ sim }: { sim: SimulationController }) {
       <p className="text-[10px] leading-relaxed text-zinc-600">
         Slider edits reset the live path. Closed-form scores update immediately; the tape
         always belongs to one seed.
+        {liveLocked ? " Market sliders are driven by the Coinbase window until Start." : ""}
       </p>
 
       <div className="flex flex-col gap-1.5">

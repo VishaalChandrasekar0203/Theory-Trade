@@ -39,6 +39,15 @@ export function ModelCard({ sim }: { sim: SimulationController }) {
         chooses the action. λ={params.lambda}/s, μ={params.mu}/s, θ={params.theta}/s/share, L=
         {params.latencyMs} ms.
       </p>
+      {sim.liveEnabled ? (
+        <p>
+          Live calibration: Coinbase Exchange public ticker + matches ({sim.liveProduct}), 10s
+          window. n is estimated from touch size, not order priority. θ is weakly identified.
+          {sim.liveFrame?.estimate?.thetaLowConfidence ? " θ badge: low confidence." : ""}{" "}
+          Lag {Math.round(sim.liveFrame?.lagMs ?? 0)} ms. Status {sim.liveStatus}. Estimates
+          freeze at Start.
+        </p>
+      ) : null}
     </div>
   );
 }

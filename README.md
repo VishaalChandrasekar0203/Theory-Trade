@@ -134,6 +134,14 @@ Nothing. `lib/sim/explain.ts` fills a fixed sentence from the same numbers as th
 
 Next.js App Router, TypeScript (strict), Tailwind CSS, shadcn/ui. Tests: Vitest. License: MIT.
 
+## Live calibration (public Coinbase L1)
+
+Optional. **Coinbase ON** in the controls subscribes (server-side) to the public Exchange websocket (`ticker` + `matches`) for `BTC-USD` or `ETH-USD`. No API key.
+
+That stream **does not** replace the matching engine. It estimates \(\lambda, \mu, \theta, \sigma, n\) from a 10s window and writes those into the existing sliders. \(n\) is **touch size** (join-the-back), not FIFO rank. \(\theta\) is weakly identified. Latency \(L\) stays yours.
+
+**Start freezes** the estimates so the seeded DES tape stays replayable. This is not colocation, not MBO, and not your live order.
+
 ## Limits (MVP)
 
 Single name, one tagged order, one-tick spread, no hidden liquidity, no multi-venue routing, no Monte Carlo fan-out, no historical LOBSTER calibration. Slider edits **reset** the live path so seed replay stays honest.

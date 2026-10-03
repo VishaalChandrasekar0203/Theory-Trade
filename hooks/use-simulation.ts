@@ -13,8 +13,16 @@ import {
   type SimParams,
   type TraderAction,
 } from "@/lib/sim";
+import {
+  LIVE_PRODUCTS,
+  estimateToParams,
+  type LiveFrame,
+  type LiveProduct,
+} from "@/lib/live";
 
 const PLAYBACK_MS = 85;
+
+export type LiveStatus = "off" | "connecting" | "live" | "stale" | "frozen" | "error";
 
 export function useSimulation() {
   const [params, setParams] = useState<SimParams>(() => cloneParams(DEFAULT_PARAMS));
@@ -24,23 +32,34 @@ export function useSimulation() {
   const [playing, setPlaying] = useState(false);
   const [warning, setWarning] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
+  const [liveEnabled, setLiveEnabled] = useState(false);
+  const [liveProduct, setLiveProduct] = useState<LiveProduct>("BTC-USD");
+  const [liveFrame, setLiveFrame] = useState<LiveFrame | null>(null);
 
   const simRef = useRef(new Simulation(DEFAULT_PARAMS));
   const followRef = useRef(followRec);
   const goalRef = useRef(goal);
+  const startedRef = useRef(started);
+  const paramsRef = useRef(params);
+  const liveFrameRef = useRef(liveFrame);
+  const liveEnabledRef = useRef(liveEnabled);
   followRef.current = followRec;
   goalRef.current = goal;
+  startedRef.current = started;
+  paramsRef.current = params;
+  liveFrameRef.current = liveFrame;
+  liveEnabledRef.current = liveEnabled;
 
   const bump = useCallback(() => setVersion((v) => v + 1), []);
 
   const rebuild = useCallback(
-    (next: SimParams) => {
+    (next: SimParams, silent = false) => {
       simRef.current = new Simulation(next);
       setStarted(false);
       setPlaying(false);
-      setWarning(
-        "Parameter change resets the path so seed replay stays honest.",
-      );
+      if (!silent) {
+        setWarning("Parameter change resets the path so seed replay stays honest.");
+      }
       bump();
     },
     [bump],
@@ -49,12 +68,34 @@ export function useSimulation() {
   const updateParams = useCallback(
     (patch: Partial<SimParams>) => {
       setParams((prev) => {
-        const next = { ...prev, ...patch };
+        let next = { ...prev, ...patch };
+        const frame = liveFrameRef.current;
+        if (
+          patch.joinSide &&
+          liveEnabledRef.current &&
+          !startedRef.current &&
+          frame?.estimate
+        ) {
+          next = { ...next, ...estimateToParams(frame.estimate, patch.joinSide) };
+        }
         rebuild(next);
         return next;
       });
     },
     [rebuild],
+  );
+
+  const applyLivePatch = useCallback(
+    (patch: Partial<SimParams>) => {
+      if (startedRef.current) return;
+      setParams((prev) => {
+        const next = { ...prev, ...patch };
+        simRef.current = new Simulation(next);
+        bump();
+        return next;
+      });
+    },
+    [bump],
   );
 
   const followIfNeeded = useCallback(() => {
@@ -123,6 +164,38 @@ export function useSimulation() {
     return () => window.clearInterval(id);
   }, [playing, stepOnce]);
 
+  useEffect(() => {
+    if (!liveEnabled) {
+      setLiveFrame(null);
+      return;
+    }
+    const source = new EventSource(`/api/market?product=${encodeURIComponent(liveProduct)}`);
+    source.onmessage = (event) => {
+      try {
+        const frame = JSON.parse(event.data) as LiveFrame;
+        setLiveFrame(frame);
+        if (startedRef.current) return;
+        if (frame.ok && frame.estimate) {
+          applyLivePatch(estimateToParams(frame.estimate, paramsRef.current.joinSide));
+        }
+      } catch {
+        /* ignore malformed frames */
+      }
+    };
+    source.onerror = () => {
+      setLiveFrame((prev) => ({
+        ok: false,
+        stale: true,
+        product: liveProduct,
+        venue: "coinbase",
+        lagMs: prev?.lagMs ?? 0,
+        vendorTs: prev?.vendorTs ?? 0,
+        error: "Live feed disconnected — retrying.",
+      }));
+    };
+    return () => source.close();
+  }, [liveEnabled, liveProduct, applyLivePatch]);
+
   const sim = simRef.current;
   const state = sim.state;
   const events = sim.events;
@@ -145,6 +218,13 @@ export function useSimulation() {
   else if (state.flight) status = "inflight";
   else if (playing) status = "running";
   else if (started) status = "paused";
+
+  let liveStatus: LiveStatus = "off";
+  if (liveEnabled && started) liveStatus = "frozen";
+  else if (liveEnabled && liveFrame?.error && !liveFrame.ok) liveStatus = "error";
+  else if (liveEnabled && liveFrame?.stale) liveStatus = "stale";
+  else if (liveEnabled && liveFrame?.ok) liveStatus = "live";
+  else if (liveEnabled) liveStatus = "connecting";
 
   return {
     params,
@@ -169,6 +249,14 @@ export function useSimulation() {
     reset,
     submit,
     version,
+    liveEnabled,
+    setLiveEnabled,
+    liveProduct,
+    setLiveProduct: (product: LiveProduct) => {
+      if (LIVE_PRODUCTS.includes(product)) setLiveProduct(product);
+    },
+    liveFrame,
+    liveStatus,
   };
 }
 

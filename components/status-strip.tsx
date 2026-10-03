@@ -27,7 +27,9 @@ export function StatusStrip({ sim }: { sim: SimulationController }) {
           Theory Trade
         </div>
         <span className="text-zinc-600">·</span>
-        <span className="uppercase tracking-[0.16em] text-zinc-400">Symbol DEMO</span>
+        <span className="uppercase tracking-[0.16em] text-zinc-400">
+          {sim.liveEnabled ? sim.liveProduct : "Symbol DEMO"}
+        </span>
         <span className="text-zinc-600">·</span>
         <span>
           t=<Mono className="text-zinc-200">{fmtMs(sim.state.t)}</Mono>
@@ -44,6 +46,30 @@ export function StatusStrip({ sim }: { sim: SimulationController }) {
         <Badge variant="outline" className={`rounded-sm font-mono text-[10px] ${st.className}`}>
           {st.label}
         </Badge>
+        {sim.liveEnabled ? (
+          <Badge
+            variant="outline"
+            className={`rounded-sm font-mono text-[10px] ${
+              sim.liveStatus === "live"
+                ? "border-emerald-700 text-emerald-400"
+                : sim.liveStatus === "frozen"
+                  ? "border-cyan-700 text-cyan-400"
+                  : sim.liveStatus === "stale" || sim.liveStatus === "error"
+                    ? "border-amber-700 text-amber-400"
+                    : "border-zinc-700 text-zinc-400"
+            }`}
+          >
+            {sim.liveStatus === "frozen"
+              ? "LIVE FROZEN"
+              : sim.liveStatus === "stale"
+                ? "LIVE STALE"
+                : sim.liveStatus === "connecting"
+                  ? "LIVE …"
+                  : sim.liveStatus === "error"
+                    ? "LIVE ERR"
+                    : "LIVE"}
+          </Badge>
+        ) : null}
         {sim.state.flight ? (
           <span className="font-mono text-[10px] uppercase tracking-wide text-amber-400">
             {sim.state.flight.action} ack @ {fmtMs(sim.state.flight.ackT)}
